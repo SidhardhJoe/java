@@ -1,6 +1,7 @@
 package sidhardhjoe.java.learnjava.controller;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sidhardhjoe.java.learnjava.bean.Student;
 
@@ -8,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
+@RequestMapping("v1/students") // Request mapping used at a class level will set as a base URL and prevent repetition in method Mapping
 public class StudentController {
 
     /*
@@ -16,7 +18,7 @@ public class StudentController {
     @GetMapping annotation will specify the URL (endpoint) and it returns a Student Object that is created from the
     Java Bean (Object)
     */
-    @GetMapping("v1/students")
+    @GetMapping("student")
     public Student getStudent(){
         return new Student(
            1, "Sidhardh", "Joe"
@@ -34,7 +36,7 @@ public class StudentController {
     a new list is created in the method which is an array list since we are returning a array of list.
     and we are returning the list
     */
-    @GetMapping("v1/students-list")
+    @GetMapping("students-list")
     public List<Student> getStudents(){
         List<Student> students = new ArrayList<>();
         students.add(new Student(1, "Alex", "Jacob"));
@@ -53,7 +55,7 @@ public class StudentController {
     @PathVariable will take in all the uri path variables and then use ("nameOfPathVariable") to bind it to the
     Parameter name. If the path variable and parameter is of the same name then this is not needed.
     */
-    @GetMapping("v1/students/{id}/{first-name}/{last-name}")
+    @GetMapping("{id}/{first-name}/{last-name}")
     public Student getStudentDetails(@PathVariable("id") int studentId,
                                      @PathVariable("first-name") String firstName,
                                      @PathVariable("last-name") String lastName
@@ -74,7 +76,7 @@ public class StudentController {
     Main difference between @PathVariable and @RequestPara is that @PathVariable is used to query by id and @RequestParam
     is more for searching will different constraints (Just one example it can vary).
      */
-    @GetMapping("v1/students/query")
+    @GetMapping("query")
     public Student queryStudents(
             @RequestParam int id,
             @RequestParam(required = false) String firstName,
@@ -93,7 +95,7 @@ public class StudentController {
 
     This will simply return a new student object that came in
     */
-    @PostMapping("v1/students/save")
+    @PostMapping("save")
     @ResponseStatus(HttpStatus.CREATED)
     public Student postStudent(@RequestBody Student student){
         System.out.println(student.getId());
@@ -115,7 +117,7 @@ public class StudentController {
 
     This will simply return a new student object that came in
     */
-    @PutMapping("v1/students/{id}/update")
+    @PutMapping("{id}/update")
     public Student udpateStudent(@RequestBody Student student, @PathVariable("id") int studentId){
         student.setId(studentId);
         System.out.println(student.getFirstName());
@@ -130,9 +132,33 @@ public class StudentController {
     @DeleteMapping will handle all incoming DELETE request to this endpoint.
     since the endpoint has a path variable and is different to its method parameter we use @PathVariable with binding to it
      */
-    @DeleteMapping("v1/students/delete/{id}")
+    @DeleteMapping("delete/{id}")
     public String deleteStudent(@PathVariable("id") String studentId){
         System.out.println(studentId);
         return "Student deleted successfully";
+    }
+
+
+    // ResponseEntity allows you to have a custom HTTP response, everything can be configured using ResponseEntity class
+    @GetMapping("response-entity")
+    public ResponseEntity<Student> getWithResponseEntity(){
+        Student student = new Student(3, "Joe", "Bencylal");
+        return new ResponseEntity<>(student, HttpStatus.OK);
+    }
+
+
+    // this is by using ResponseEntity with more modified response... updated header and status code with body
+    /*
+    new ResponseEntity is using a constructor and the other one is using a builder.
+    builder is more simple as it can be chained, constructor everything needs be passed in as a parameter,
+    so an HTTP header will require a new HttpHeaders() and HttpHeaders.add(name, value).
+    builder is more simple.
+
+    NOTE: builder needs to be chained in the proper way. .status().header().body()
+     */
+    @GetMapping("response-entity/custom-header")
+    public ResponseEntity<Student> getWithResponseEntityCustomHeader(){
+        Student student = new Student(3, "Joe", "Bencylal");
+        return ResponseEntity.ok().header("custom-header", "Joe").body(student);
     }
 }
